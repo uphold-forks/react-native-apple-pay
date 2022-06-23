@@ -20,7 +20,7 @@
   "nativePackage": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/busfor/react-native-apple-pay.git"
+    "url": "https://github.com/uphold-forks/react-native-apple-pay.git"
   },
   "peerDependencies": {
     "react-native": ">=0.60.0"

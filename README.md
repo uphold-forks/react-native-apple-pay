@@ -48,39 +48,50 @@ pod 'RNApplePay', :path => '../node_modules/react-native-apple-pay'
 ## Usage
 
 ```javascript
-import { ApplePay } from "react-native-apple-pay";
+import { ApplePay, ApplePayRequestStatus } from "react-native-apple-pay";
 
-const requestData = {
-  merchantIdentifier: "merchant.com.example",
-  supportedNetworks: ["mastercard", "visa"],
-  countryCode: "US",
-  currencyCode: "USD",
-  paymentSummaryItems: [
-    {
-      label: "Item label",
-      amount: "100.00",
-    },
-  ],
-};
+const payWithApplePay = async () => {
+  // Check if ApplePay is available
+  if (!ApplePay.canMakePayments) {
+    return;
+  }
 
-// Check if ApplePay is available
-if (ApplePay.canMakePayments) {
-  ApplePay.requestPayment(requestData).then((paymentData) => {
-    console.log(paymentData);
-    // Simulate a request to the gateway
-    setTimeout(() => {
-      // Show status to user ApplePay.SUCCESS || ApplePay.FAILURE
-      ApplePay.complete(ApplePay.SUCCESS).then(() => {
-        console.log("completed");
-        // do something
-      });
+  try {
+    const paymentData = await ApplePay.requestPayment({
+      merchantIdentifier: "merchant.com.example",
+      merchantCapabilities: ["3ds", "debit"],
+      supportedNetworks: ["mastercard", "visa"],
+      countryCode: "US",
+      currencyCode: "USD",
+      paymentSummaryItems: [
+        {
+          label: "Item label",
+          amount: "100.00",
+        },
+      ],
+    });
+
+    console.log("requestPayment response:", { paymentData });
+
+    setTimeout(async () => {
+      try {
+        await ApplePay.complete(ApplePayRequestStatus.succes);
+
+        console.log("complete");
+      } catch (error) {
+        console.log("complete error:", { error });
+      }
     }, 1000);
-  });
-}
+  } catch (error) {
+    console.log("requestPayment error:", { error });
+  }
+};
 ```
 
 ## Demo
 
 You can run the demo by cloning the project and running:
 
-`$ yarn demo`
+`$ yarn demo:install # To install depencies and build the app`
+
+`$ yarn demo:start # To run react-native`

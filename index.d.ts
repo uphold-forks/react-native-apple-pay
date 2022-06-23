@@ -1,27 +1,30 @@
-export type APayAllowedCardNetworkType = "amex" | "masterCard"| "visa" | "privatelabel" | "chinaUnionPay" | "interac" | "jcb" | "suica" | "cartebancaires" | "idcredit" | "quicpay" | "maestro" | "discover" | "cartesBancaires" | "eftpos" | "electron" | "elo" | "girocard" | "mada" | "mir" | "vPay"
+export type ApplePayCardNetwork = "amex" | "cartebancaires" | "cartesbancaires" | "chinaunionpay" | "discover" | "eftpos" | "electron" | "elo" | "girocard" | "idcredit" | "interac" | "jcb" | "mada" | "maestro" | "mastercard"| "mir" | "privatelabel" | "quicpay" | "suica" | "vpay" | "visa";
 
-export type APayPaymentStatusType = number
+export type ApplePayMerchantCapability = "3ds" | "credit" | "debit" | "emv";
 
-export interface APayPaymentSummaryItemType {
-  label: string
+export enum ApplePayRequestStatus {
+  dismissed = "DISMISSED_ERROR",
+  failure = 1,
+  success = 0
+}
+
+export interface ApplePayPaymentSummaryItem {
   amount: string
+  label: string
   pending?: boolean
 }
 
-export interface APayRequestDataType {
-  merchantIdentifier: string
-  supportedNetworks: APayAllowedCardNetworkType[]
+export interface ApplePayRequest {
   countryCode: string
   currencyCode: string
-  paymentSummaryItems: APayPaymentSummaryItemType[]
+  merchantCapabilities: ApplePayMerchantCapability[]
+  merchantIdentifier: string
+  paymentSummaryItems: ApplePayPaymentSummaryItem[]
+  supportedNetworks: ApplePayCardNetwork[]
 }
 
-declare class ApplePay {
-  static SUCCESS: APayPaymentStatusType
-  static FAILURE: APayPaymentStatusType
+export class ApplePay {
   static canMakePayments: boolean
-  static requestPayment: (requestData: APayRequestDataType) => Promise<string>
-  static complete: (status: APayPaymentStatusType) => Promise<void>
+  static complete: (status: ApplePayRequestStatus) => Promise<void>
+  static requestPayment: (requestData: ApplePayRequest) => Promise<string>
 }
-
-export { ApplePay }
