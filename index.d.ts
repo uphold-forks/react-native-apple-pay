@@ -2,6 +2,8 @@ export type ApplePayCardNetwork = "amex" | "cartebancaires" | "cartesbancaires" 
 
 export type ApplePayMerchantCapability = "3ds" | "credit" | "debit" | "emv";
 
+export type ApplePayPaymentResultCardType = "credit" | "debit" | "emoney" | "prepaid" | "store" | "unknown";
+
 export enum ApplePayRequestStatus {
   dismissed = "DISMISSED_ERROR",
   failure = 1,
@@ -12,6 +14,14 @@ export interface ApplePayPaymentSummaryItem {
   amount: string
   label: string
   pending?: boolean
+}
+
+export interface ApplePayPaymentResult {
+  cardType: ApplePayPaymentResultCardType
+  displayName: string
+  network: string
+  paymentData: string
+  transactionId: string
 }
 
 export interface ApplePayRequest {
@@ -26,5 +36,5 @@ export interface ApplePayRequest {
 export class ApplePay {
   static canMakePayments: boolean
   static complete: (status: ApplePayRequestStatus) => Promise<void>
-  static requestPayment: (requestData: ApplePayRequest) => Promise<string>
+  static requestPayment: (requestData: ApplePayRequest) => Promise<ApplePayPaymentResult>
 }

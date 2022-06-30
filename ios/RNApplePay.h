@@ -8,6 +8,6 @@
 
 @property (nonatomic, strong, nullable) RCTPromiseResolveBlock requestPaymentResolve;
 @property (nonatomic, strong, nullable) RCTPromiseResolveBlock completeResolve;
-@property (nonatomic, copy, nullable) void (^completion)(PKPaymentAuthorizationStatus);
+@property (nonatomic, copy, nullable) void (^completion)(PKPaymentAuthorizationResult * _Nullable);
 
 @end

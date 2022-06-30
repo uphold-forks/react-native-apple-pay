@@ -57,21 +57,28 @@ const payWithApplePay = async () => {
   }
 
   try {
-    const paymentData = await ApplePay.requestPayment({
-      merchantIdentifier: "merchant.com.example",
-      merchantCapabilities: ["3ds", "debit"],
-      supportedNetworks: ["mastercard", "visa"],
-      countryCode: "US",
-      currencyCode: "USD",
-      paymentSummaryItems: [
-        {
-          label: "Item label",
-          amount: "100.00",
-        },
-      ],
-    });
+    const { cardType, displayName, network, paymentData, transactionId } =
+      await ApplePay.requestPayment({
+        merchantIdentifier: "merchant.com.example",
+        merchantCapabilities: ["3ds", "debit"],
+        supportedNetworks: ["mastercard", "visa"],
+        countryCode: "US",
+        currencyCode: "USD",
+        paymentSummaryItems: [
+          {
+            label: "Item label",
+            amount: "100.00",
+          },
+        ],
+      });
 
-    console.log("requestPayment response:", { paymentData });
+    console.log("requestPayment response:", {
+      cardType,
+      displayName,
+      network,
+      paymentData,
+      transactionId,
+    });
 
     setTimeout(async () => {
       try {
