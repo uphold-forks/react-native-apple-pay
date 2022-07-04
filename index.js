@@ -4,14 +4,20 @@ import { NativeModules, Platform } from 'react-native';
 const { RNApplePay } = NativeModules;
 
 const throwError = () => {
-  throw new Error(`Google Pay is for Android only, use Platform.OS === 'android'`)
+  throw new Error(`Apple Pay is for iOS only, use Platform.OS === 'ios'`)
 };
 
-const mockAndroid = {
-  requestPayment: throwError,
-  complete: throwError,
-};
+const RNModule =
+  Platform.OS === 'ios'
+    ? RNApplePay :
+    {
+      RequestStatus: {},
+      canMakePayments: throwError,
+      complete: throwError,
+      requestPayment: throwError
+    };
 
-const ApplePay = Platform.OS === 'ios' ? RNApplePay : mockAndroid
+const { RequestStatus, canMakePayments, complete, requestPayment } = RNModule;
 
-export { ApplePay };
+export const ApplePay = { canMakePayments, complete, requestPayment };
+export const ApplePayRequestStatus = RequestStatus;

@@ -1,12 +1,13 @@
 
 {
-  "name": "react-native-apay",
+  "name": "react-native-apple-pay",
   "version": "1.3.1",
   "description": "React Native bridge for Apple Pay",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "demo": "cd ./Example && yarn && cd ios && pod install && cd .. && yarn start && react-native run-ios"
+    "demo:install": "cd ./Example && rm -rf node_modules && yarn && cd ios && pod install && cd .. && react-native run-ios",
+    "demo:start": "cd ./Example && react-native start"
   },
   "keywords": [
     "react-native",
@@ -19,9 +20,9 @@
   "nativePackage": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/busfor/react-native-apay.git"
+    "url": "https://github.com/uphold-forks/react-native-apple-pay.git"
   },
   "peerDependencies": {
-    "react-native": ">=0.41.2"
+    "react-native": ">=0.60.0"
   }
 }

@@ -1,12 +1,13 @@
-import React, { Component } from 'react'
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native'
-import { ApplePay, APayRequestDataType, APayPaymentStatusType } from 'react-native-apay'
+import { ApplePay, ApplePayRequest, ApplePayRequestStatus } from 'react-native-apple-pay';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
 
-const requestData: APayRequestDataType = {
-  merchantIdentifier: 'merchant.com.payture.applepay.Busfor',
-  supportedNetworks: ['mastercard', 'visa'],
+const requestData: ApplePayRequest = {
   countryCode: 'US',
   currencyCode: 'USD',
+  merchantCapabilities: ['3ds', 'credit'],
+  merchantIdentifier: 'merchant.com.payture.applepay.Busfor',
+  supportedNetworks: ['mastercard', 'visa'],
   paymentSummaryItems: [
     {
       label: 'Item label',
@@ -15,42 +16,45 @@ const requestData: APayRequestDataType = {
   ],
 }
 
-export default class App extends Component {
-
-  payWithApplePay = (status: APayPaymentStatusType) => {
+export const App = () => {
+  const payWithApplePay = async (status: ApplePayRequestStatus) => {
     // Check if ApplePay is available
     if (ApplePay.canMakePayments) {
-      ApplePay.requestPayment(requestData)
-        .then((paymentData) => {
-          // In Sumilator always returns an empty string
-          console.log({ paymentData })
-          // Simulate a request to the gateway
-          setTimeout(() => {
-            // Show status to user ApplePay.SUCCESS || ApplePay.FAILURE
-            ApplePay.complete(status)
-              .then(() => {
-                console.log('completed')
-                // do something
-              })
-          }, 1000)
-        })
-    }
-  }
+      try {
+        const paymentData = await ApplePay.requestPayment(requestData);
 
-  render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>Welcome to react-native-apay!</Text>
-        <TouchableOpacity style={styles.button} onPress={() => this.payWithApplePay(ApplePay.SUCCESS)}>
-          <Text style={styles.buttonText}>Buy with Apple Pay (SUCCESS)</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => this.payWithApplePay(ApplePay.FAILURE)}>
-          <Text style={styles.buttonText}>Buy with Apple Pay (FAILURE)</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-}
+        console.log({ paymentData })
+
+        setTimeout(async () => {
+          try {
+            await ApplePay.complete(status)
+
+            console.log('complete')
+          } catch (error) {
+            console.log({ error })
+          }
+        }, 1000)
+      } catch (error) {
+        console.log({ error })
+      }
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.welcome}>Welcome to react-native-apple-pay!</Text>
+
+      <TouchableOpacity style={styles.button} onPress={() => payWithApplePay(ApplePayRequestStatus.success)}>
+        <Text style={styles.buttonText}>Buy with Apple Pay (SUCCESS)</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.button} onPress={() => payWithApplePay(ApplePayRequestStatus.failure)}>
+        <Text style={styles.buttonText}>Buy with Apple Pay (FAILURE)</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
 
 const styles = StyleSheet.create({
   container: {
