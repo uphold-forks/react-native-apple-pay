@@ -18,8 +18,9 @@ RCT_EXPORT_MODULE()
 - (NSDictionary *)constantsToExport
 {
   NSDictionary *requestStatus = @{
-    @"dismissed": @"DISMISSED_ERROR",
+    @"dismissed": @"DISMISSED",
     @"failure": @(PKPaymentAuthorizationStatusFailure),
+    @"requestError": @"REQUEST_ERROR",
     @"success": @(PKPaymentAuthorizationStatusSuccess)
   };
 
@@ -46,6 +47,7 @@ RCT_EXPORT_METHOD(requestPayment:(NSDictionary *)props promiseWithResolver:(RCTP
     UIViewController *rootViewController = RCTPresentedViewController();
     [rootViewController presentViewController:self.viewController animated:YES completion:nil];
     self.requestPaymentResolve = resolve;
+    self.requestPaymentReject = reject;
   });
 }
 
@@ -197,8 +199,15 @@ RCT_EXPORT_METHOD(complete:(NSNumber *_Nonnull)status promiseWithResolver:(RCTPr
     NSError *error;
     NSData *result = [NSJSONSerialization dataWithJSONObject:paymentResponse options:NSJSONWritingSortedKeys error: &error];
 
+    if (error != NULL) {
+      NSString *requestError = self.constantsToExport[@"RequestStatus"][@"requestError"];
+
+      self.requestPaymentReject(requestError, requestError, error);
+    }
+
     self.requestPaymentResolve([[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding]);
     self.requestPaymentResolve = NULL;
+    self.requestPaymentReject = NULL;
   }
 }
 
@@ -207,12 +216,19 @@ RCT_EXPORT_METHOD(complete:(NSNumber *_Nonnull)status promiseWithResolver:(RCTPr
     [controller dismissViewControllerAnimated:YES completion:^void {
       if (self.completeResolve != NULL) {
         self.completeResolve(nil);
-        self.completeResolve = NULL;
       }
-      if (self.requestPaymentResolve != NULL) {
+
+      if (self.requestPaymentReject != NULL) {
+        NSString *dismissedStatus = self.constantsToExport[@"RequestStatus"][@"dismissed"];
+
+        self.requestPaymentReject(dismissedStatus, dismissedStatus, nil);
+      } else if (self.requestPaymentResolve != NULL) {
         self.requestPaymentResolve(nil);
-        self.requestPaymentResolve = NULL;
       }
+
+      self.completeResolve = NULL;
+      self.requestPaymentReject = NULL;
+      self.requestPaymentResolve = NULL;
     }];
   });
 }
