@@ -91,6 +91,10 @@ const payWithApplePay = async () => {
     }, 1000);
   } catch (error) {
     console.log("requestPayment error:", { error });
+
+    if (error.code === ApplePayRequestStatus.dismissed) {
+      console.log("requestPayment dismissed");
+    }
   }
 };
 ```

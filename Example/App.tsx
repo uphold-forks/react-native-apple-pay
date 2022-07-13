@@ -36,6 +36,10 @@ export const App = () => {
         }, 1000)
       } catch (error) {
         console.log({ error })
+
+        if (error.code === ApplePayRequestStatus.dismissed) {
+          console.log('dismissed')
+        }
       }
     }
   };

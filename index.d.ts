@@ -5,8 +5,9 @@ export type ApplePayMerchantCapability = "3ds" | "credit" | "debit" | "emv";
 export type ApplePayPaymentResultCardType = "credit" | "debit" | "emoney" | "prepaid" | "store" | "unknown";
 
 export enum ApplePayRequestStatus {
-  dismissed = "DISMISSED_ERROR",
+  dismissed = "DISMISSED",
   failure = 1,
+  requestError = "REQUEST_ERROR",
   success = 0
 }
 
