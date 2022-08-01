@@ -20,6 +20,7 @@ RCT_EXPORT_MODULE()
   NSDictionary *requestStatus = @{
     @"dismissed": @"DISMISSED",
     @"failure": @(PKPaymentAuthorizationStatusFailure),
+    @"requestError": @"REQUEST_ERROR",
     @"success": @(PKPaymentAuthorizationStatusSuccess)
   };
 
@@ -51,16 +52,9 @@ RCT_EXPORT_METHOD(requestPayment:(NSDictionary *)props promiseWithResolver:(RCTP
 }
 
 RCT_EXPORT_METHOD(complete:(NSNumber *_Nonnull)status promiseWithResolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
-  if (self.completion != NULL) {
-    self.completeResolve = resolve;
+  self.completeResolve = resolve;
 
-    if ([status isEqualToNumber: self.constantsToExport[@"RequestStatus"][@"success"]]) {
-      self.completion([[PKPaymentAuthorizationResult alloc] initWithStatus:PKPaymentAuthorizationStatusSuccess errors:nil]);
-    } else {
-      self.completion([[PKPaymentAuthorizationResult alloc] initWithStatus:PKPaymentAuthorizationStatusFailure errors:nil]);
-    }
-    self.completion = NULL;
-  }
+  [self handleCompletion:status];
 }
 
 - (PKMerchantCapability)getMerchantCapabilities:(NSDictionary *_Nonnull)props
@@ -169,6 +163,23 @@ RCT_EXPORT_METHOD(complete:(NSNumber *_Nonnull)status promiseWithResolver:(RCTPr
   return paymentSummaryItems;
 }
 
+- (void)handleCompletion:(NSNumber *_Nonnull)status
+{
+  if (self.completion != NULL) {
+    @try {
+      if ([status isEqualToNumber: self.constantsToExport[@"RequestStatus"][@"success"]]) {
+        self.completion([[PKPaymentAuthorizationResult alloc] initWithStatus:PKPaymentAuthorizationStatusSuccess errors:nil]);
+      } else {
+        self.completion([[PKPaymentAuthorizationResult alloc] initWithStatus:PKPaymentAuthorizationStatusFailure errors:nil]);
+      }
+    }
+    @catch (NSException *exception) {
+      self.completion([[PKPaymentAuthorizationResult alloc] initWithStatus:PKPaymentAuthorizationStatusFailure errors:nil]);
+    }
+    self.completion = NULL;
+  }
+}
+
 - (void)paymentAuthorizationViewController:(PKPaymentAuthorizationViewController *)controller
              didAuthorizePayment:(PKPayment *)payment
                    handler:(void (^)(PKPaymentAuthorizationResult *result))completion
@@ -176,28 +187,38 @@ RCT_EXPORT_METHOD(complete:(NSNumber *_Nonnull)status promiseWithResolver:(RCTPr
   self.completion = completion;
 
   if (self.requestPaymentResolve != NULL) {
-    NSDictionary *typeMapping = @{
-      @(PKPaymentMethodTypeCredit): @"credit",
-      @(PKPaymentMethodTypeDebit): @"debit",
-      @(PKPaymentMethodTypeEMoney): @"emoney",
-      @(PKPaymentMethodTypePrepaid): @"prepaid",
-      @(PKPaymentMethodTypeStore): @"store",
-      @(PKPaymentMethodTypeUnknown): @"unknown"
-    };
+    @try {
+      NSDictionary *typeMapping = @{
+        @(PKPaymentMethodTypeCredit): @"credit",
+        @(PKPaymentMethodTypeDebit): @"debit",
+        @(PKPaymentMethodTypeEMoney): @"emoney",
+        @(PKPaymentMethodTypePrepaid): @"prepaid",
+        @(PKPaymentMethodTypeStore): @"store",
+        @(PKPaymentMethodTypeUnknown): @"unknown"
+      };
 
-    NSString *paymentData = [[NSString alloc] initWithData:payment.token.paymentData encoding:NSUTF8StringEncoding];
+      NSString *paymentData = [[NSString alloc] initWithData:payment.token.paymentData encoding:NSUTF8StringEncoding];
 
-    NSDictionary *result = @{
-      @"cardType": typeMapping[@(payment.token.paymentMethod.type)],
-      @"displayName": payment.token.paymentMethod.displayName,
-      @"network": payment.token.paymentMethod.network,
-      @"paymentData": paymentData,
-      @"transactionId": payment.token.transactionIdentifier
-    };
+      NSDictionary *result = @{
+        @"cardType": typeMapping[@(payment.token.paymentMethod.type)],
+        @"displayName": payment.token.paymentMethod.displayName,
+        @"network": payment.token.paymentMethod.network,
+        @"paymentData": paymentData,
+        @"transactionId": payment.token.transactionIdentifier
+      };
 
-    self.requestPaymentResolve(result);
-    self.requestPaymentResolve = NULL;
-    self.requestPaymentReject = NULL;
+      self.requestPaymentResolve(result);
+      }
+    @catch (NSException *exception) {
+      NSString *status = self.constantsToExport[@"RequestStatus"][@"requestError"];
+
+      self.requestPaymentReject(status, exception.reason, nil);
+      [self handleCompletion:status];
+    }
+    @finally {
+      self.requestPaymentResolve = NULL;
+      self.requestPaymentReject = NULL;
+    }
   }
 }
 

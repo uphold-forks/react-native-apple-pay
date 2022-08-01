@@ -7,6 +7,7 @@ export type ApplePayPaymentResultCardType = "credit" | "debit" | "emoney" | "pre
 export enum ApplePayRequestStatus {
   dismissed = "DISMISSED",
   failure = 1,
+  requestError = "REQUEST_ERROR",
   success = 0
 }
 
