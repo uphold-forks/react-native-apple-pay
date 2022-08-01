@@ -20,7 +20,6 @@ RCT_EXPORT_MODULE()
   NSDictionary *requestStatus = @{
     @"dismissed": @"DISMISSED",
     @"failure": @(PKPaymentAuthorizationStatusFailure),
-    @"requestError": @"REQUEST_ERROR",
     @"success": @(PKPaymentAuthorizationStatusSuccess)
   };
 
@@ -188,7 +187,7 @@ RCT_EXPORT_METHOD(complete:(NSNumber *_Nonnull)status promiseWithResolver:(RCTPr
 
     NSString *paymentData = [[NSString alloc] initWithData:payment.token.paymentData encoding:NSUTF8StringEncoding];
 
-    NSDictionary *paymentResponse = @{
+    NSDictionary *result = @{
       @"cardType": typeMapping[@(payment.token.paymentMethod.type)],
       @"displayName": payment.token.paymentMethod.displayName,
       @"network": payment.token.paymentMethod.network,
@@ -196,16 +195,7 @@ RCT_EXPORT_METHOD(complete:(NSNumber *_Nonnull)status promiseWithResolver:(RCTPr
       @"transactionId": payment.token.transactionIdentifier
     };
 
-    NSError *error;
-    NSData *result = [NSJSONSerialization dataWithJSONObject:paymentResponse options:NSJSONWritingSortedKeys error: &error];
-
-    if (error != NULL) {
-      NSString *requestError = self.constantsToExport[@"RequestStatus"][@"requestError"];
-
-      self.requestPaymentReject(requestError, requestError, error);
-    }
-
-    self.requestPaymentResolve([[NSString alloc] initWithData:result encoding:NSUTF8StringEncoding]);
+    self.requestPaymentResolve(result);
     self.requestPaymentResolve = NULL;
     self.requestPaymentReject = NULL;
   }
