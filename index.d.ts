@@ -11,6 +11,16 @@ export enum ApplePayRequestStatus {
   success = 0
 }
 
+export interface ApplePayDisbursementRequest {
+  currencyCode: string
+  disbursementSummaryItem: ApplePayPaymentSummaryItem
+  merchantCapabilities: ApplePayMerchantCapability[]
+  merchantIdentifier: string
+  paymentSummaryItems: ApplePayPaymentSummaryItem[]
+  regionCode: string
+  supportedNetworks: ApplePayCardNetwork[]
+}
+
 export interface ApplePayPaymentSummaryItem {
   amount: string
   label: string
@@ -37,5 +47,7 @@ export interface ApplePayRequest {
 export class ApplePay {
   static canMakePayments: boolean
   static complete: (status: ApplePayRequestStatus) => Promise<void>
+  static requestDisbursement: (requestData: ApplePayDisbursementRequest) => Promise<ApplePayPaymentResult>
   static requestPayment: (requestData: ApplePayRequest) => Promise<ApplePayPaymentResult>
+  static supportsDisbursements: boolean
 }

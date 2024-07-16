@@ -4,12 +4,13 @@
 ![npm](https://img.shields.io/npm/dw/react-native-apple-pay.svg?style=flat-square)
 [![npm (tag)](https://img.shields.io/npm/v/react-native-apple-pay/latest.svg?style=flat-square)](https://github.com/busfor/react-native-apple-pay/tree/master)
 
-Accept Payments with Apple Pay for React Native apps.
+Accept Payments and Disbursements with Apple Pay for React Native apps.
 
 <div>
-<img width="280px" src="simulator.gif" />
-</div>
+<img width="280px" src="payment.gif" />
 
+<img width="280px" src="disbursement.gif" />
+</div>
 ---
 
 ## Getting started
