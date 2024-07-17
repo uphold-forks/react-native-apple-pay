@@ -1,4 +1,3 @@
-
 import { NativeModules, Platform } from 'react-native';
 
 const { RNApplePay } = NativeModules;
@@ -7,16 +6,18 @@ const defaultModule = {
   RequestStatus: {},
   canMakePayments: throwError,
   complete: throwError,
-  requestPayment: throwError
+  requestDisbursement: throwError,
+  requestPayment: throwError,
+  supportsDisbursements: throwError
 };
 
 const throwError = () => {
-  throw new Error(`Apple Pay is for iOS only, use Platform.OS === 'ios'`)
+  throw new Error(`Apple Pay is for iOS only, use Platform.OS === 'ios'`);
 };
 
 const RNModule = Platform.OS === 'ios' ? RNApplePay : defaultModule;
 
-const { RequestStatus, canMakePayments, complete, requestPayment } = RNModule || defaultModule;
+const { RequestStatus, canMakePayments, complete, requestDisbursement, requestPayment, supportsDisbursements } = RNModule || defaultModule;
 
-export const ApplePay = { canMakePayments, complete, requestPayment };
+export const ApplePay = { canMakePayments, complete, requestDisbursement, requestPayment, supportsDisbursements };
 export const ApplePayRequestStatus = RequestStatus;

@@ -24,10 +24,46 @@ RCT_EXPORT_MODULE()
     @"success": @(PKPaymentAuthorizationStatusSuccess)
   };
 
+  BOOL supportsDisbursements = NO;
+
+  if (@available(iOS 17, *)) {
+    supportsDisbursements = [PKPaymentAuthorizationViewController supportsDisbursements];
+  }
+
   return @{
-       @"canMakePayments": @([PKPaymentAuthorizationViewController canMakePayments]),
-       @"RequestStatus": requestStatus
-       };
+    @"canMakePayments": @([PKPaymentAuthorizationViewController canMakePayments]),
+    @"RequestStatus": requestStatus,
+    @"supportsDisbursements": @(supportsDisbursements)
+  };  
+}
+
+RCT_EXPORT_METHOD(requestDisbursement:(NSDictionary *)props promiseWithResolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+  if (!@available(iOS 17, *)) {
+      NSString *errorCode = self.constantsToExport[@"RequestStatus"][@"requestError"];
+      NSString *errorMessage = @"Disbursement request is not supported on this version of iOS.";
+      NSError *error = nil;
+      
+      reject(errorCode, errorMessage, error);
+      return;
+  }
+
+  PKDisbursementRequest *disbursementsRequest = [[PKDisbursementRequest alloc] initWithMerchantIdentifier:
+                                          props[@"merchantIdentifier"] 
+                                          currencyCode:props[@"currencyCode"]
+                                          regionCode:props[@"regionCode"]
+                                          supportedNetworks:[self getSupportedNetworks:props]
+                                          merchantCapabilities:[self getMerchantCapabilities:props]
+                                          summaryItems:[self getDisbursementSummaryItems:props]];
+
+  self.viewController = [[PKPaymentAuthorizationViewController alloc] initWithDisbursementRequest: disbursementsRequest];
+  self.viewController.delegate = self;
+
+  dispatch_async(dispatch_get_main_queue(), ^{
+    UIViewController *rootViewController = RCTPresentedViewController();
+    [rootViewController presentViewController:self.viewController animated:YES completion:nil];
+    self.requestPaymentResolve = resolve;
+    self.requestPaymentReject = reject;
+  });
 }
 
 RCT_EXPORT_METHOD(requestPayment:(NSDictionary *)props promiseWithResolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
@@ -55,6 +91,19 @@ RCT_EXPORT_METHOD(complete:(NSNumber *_Nonnull)status promiseWithResolver:(RCTPr
   self.completeResolve = resolve;
 
   [self handleCompletion:status];
+}
+
+- (NSArray<PKPaymentSummaryItem *> *_Nonnull)getDisbursementSummaryItems:(NSDictionary *_Nonnull)props
+{  
+    NSDictionary *disbursementSummaryItemProp = props[@"disbursementSummaryItem"];
+    NSDecimalNumber *disbursementAmount = [NSDecimalNumber decimalNumberWithString: disbursementSummaryItemProp[@"amount"]];
+    NSString *label = disbursementSummaryItemProp[@"label"];
+    NSArray <PKPaymentSummaryItem *> *paymentSummaryItems = [self getPaymentSummaryItems:props];
+    NSMutableArray <PKPaymentSummaryItem *> *summaryItems = [paymentSummaryItems mutableCopy];
+
+    [summaryItems addObject: [PKDisbursementSummaryItem summaryItemWithLabel:label amount:disbursementAmount]];
+
+    return summaryItems;
 }
 
 - (PKMerchantCapability)getMerchantCapabilities:(NSDictionary *_Nonnull)props
