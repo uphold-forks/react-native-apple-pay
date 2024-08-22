@@ -18,7 +18,8 @@ export interface ApplePayDisbursementRequest {
   merchantIdentifier: string
   paymentSummaryItems: ApplePayPaymentSummaryItem[]
   regionCode: string
-  supportedNetworks: ApplePayCardNetwork[]
+  supportedNetworks: ApplePayCardNetwork[],
+  supportedRegions: string[]
 }
 
 export interface ApplePayPaymentSummaryItem {

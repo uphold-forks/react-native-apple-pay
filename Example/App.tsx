@@ -18,7 +18,8 @@ const requestDisbursementData: ApplePayDisbursementRequest = {
   merchantIdentifier: 'merchant.com.payture.applepay.Busfor',
   regionCode: 'US',
   paymentSummaryItems: [{ amount: '100.00', label: 'Business label' }],
-  supportedNetworks: ['mastercard', 'visa']
+  supportedNetworks: ['mastercard', 'visa'],
+  supportedRegions: ['US']
 }
 
 export const App = () => {
