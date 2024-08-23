@@ -52,9 +52,10 @@ RCT_EXPORT_METHOD(requestDisbursement:(NSDictionary *)props promiseWithResolver:
                                           currencyCode:props[@"currencyCode"]
                                           regionCode:props[@"regionCode"]
                                           supportedNetworks:[self getSupportedNetworks:props]
-                                          supportedRegions:props[@"supportedRegions"]
                                           merchantCapabilities:[self getMerchantCapabilities:props]
                                           summaryItems:[self getDisbursementSummaryItems:props]];
+
+  disbursementsRequest.supportedRegions = props[@"supportedRegions"];
 
   self.viewController = [[PKPaymentAuthorizationViewController alloc] initWithDisbursementRequest: disbursementsRequest];
   self.viewController.delegate = self;
